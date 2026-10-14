@@ -73,16 +73,19 @@ export function MapScreen() {
   }, [params.lat, params.lon, params.zoom]);
 
   const zoom = view?.zoom ?? INITIAL.zoom;
+  // Memoise on threshold booleans so continuous zooming does not create new
+  // arrays (and new queries) unless the visible set actually changes.
+  const showSmall = L.airports && zoom >= 7;
+  const showHeli = L.heliports && zoom >= 9;
+  const showNav = zoom >= 5;
   const airportTypes = useMemo<AirportType[]>(() => {
     const t: AirportType[] = [];
-    if (L.airports) {
-      t.push('large_airport', 'medium_airport');
-      if (zoom >= 7) t.push('small_airport', 'seaplane_base');
-    }
-    if (L.heliports && zoom >= 9) t.push('heliport');
+    if (L.airports) t.push('large_airport', 'medium_airport');
+    if (showSmall) t.push('small_airport', 'seaplane_base');
+    if (showHeli) t.push('heliport');
     return t;
-  }, [L.airports, L.heliports, zoom]);
-  const navTypes = useMemo(() => (zoom >= 5 ? visibleNavaidTypes(L) : []), [L, zoom]);
+  }, [L.airports, showSmall, showHeli]);
+  const navTypes = useMemo(() => (showNav ? visibleNavaidTypes(L) : []), [L, showNav]);
 
   // Debounced viewport query against local SQLite — no network per map move.
   const [queryBounds, setQueryBounds] = useState<Bounds | null>(null);
@@ -141,6 +144,9 @@ export function MapScreen() {
   }, []);
 
   const onFeaturePress = useCallback((e: NativeSyntheticEvent<PressEventWithFeatures>) => {
+    // Press events emit on both the Source and the Map; stop it so the Map's
+    // "tap empty area clears selection" handler does not run.
+    e.stopPropagation();
     const f = e.nativeEvent.features[0];
     const p = f?.properties as Record<string, unknown> | null | undefined;
     if (!p || typeof p.kind !== 'string' || typeof p.id !== 'string') return;
@@ -225,7 +231,7 @@ export function MapScreen() {
           </GeoJSONSource>
         ) : null}
 
-        <GeoJSONSource id="airports" data={ref.data?.airports ?? EMPTY_FC} onPress={onFeaturePress} hitbox={{ top: 12, right: 12, bottom: 12, left: 12 }}>
+        <GeoJSONSource id="airports" data={ref.data?.airports ?? EMPTY_FC} onPress={onFeaturePress}>
           <Layer
             type="circle"
             id="airport-circle"
@@ -253,7 +259,7 @@ export function MapScreen() {
           />
         </GeoJSONSource>
 
-        <GeoJSONSource id="navaids" data={ref.data?.navaids ?? EMPTY_FC} onPress={onFeaturePress} hitbox={{ top: 12, right: 12, bottom: 12, left: 12 }}>
+        <GeoJSONSource id="navaids" data={ref.data?.navaids ?? EMPTY_FC} onPress={onFeaturePress}>
           {/* Distinct symbology by source classification */}
           <Layer
             type="circle"

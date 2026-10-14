@@ -58,10 +58,11 @@ describe('NOTAM list screen', () => {
     expect(screen.getAllByText('SİMÜLE').length).toBeGreaterThan(0);
     // EST end passed -> unknown state is shown, not silently expired
     expect(screen.getByTestId('notam-row-C0302/26')).toBeTruthy();
-    // Replaced, cancelled and expired notices are hidden by default
+    // Replaced (A0101, by A0102 from 15 Oct 06:00Z) and expired (B0202) notices are hidden by default
     expect(screen.queryByTestId('notam-row-A0101/26')).toBeNull();
-    expect(screen.queryByTestId('notam-row-A0102/26')).toBeNull();
     expect(screen.queryByTestId('notam-row-B0202/26')).toBeNull();
+    // A0102's cancellation (A0103) only takes effect 16 Oct 00:00Z, so it is still in force
+    expect(screen.getByTestId('notam-row-A0102/26')).toBeTruthy();
 
     await act(async () => {
       fireEvent.press(screen.getByText('Değiştirildi'));
@@ -77,7 +78,8 @@ describe('layer panel', () => {
     await act(async () => {
       fireEvent(screen.getByTestId('layer-toggle-vor'), 'valueChange', false);
     });
-    expect(value.updateSettings).toHaveBeenCalledWith({ layers: expect.objectContaining({ vor: false, ndb: true }) });
+    const patch = (value.updateSettings as jest.Mock).mock.calls[0][0] as (s: AppSettings) => Partial<AppSettings>;
+    expect(patch(DEFAULT_SETTINGS)).toEqual({ layers: expect.objectContaining({ vor: false, ndb: true }) });
 
     const airways = screen.getByTestId('layer-toggle-airways');
     expect(airways.props.disabled).toBe(true);

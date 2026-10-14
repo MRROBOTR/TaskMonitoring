@@ -43,7 +43,7 @@ export function LayerPanel({ onClose }: { onClose: () => void }) {
                     testID={`layer-toggle-${l.id}`}
                     disabled={unavailable}
                     value={!unavailable && settings.layers[l.id]}
-                    onValueChange={(v) => updateSettings({ layers: { ...settings.layers, [l.id]: v } })}
+                    onValueChange={(v) => updateSettings((cur) => ({ layers: { ...cur.layers, [l.id]: v } }))}
                   />
                 </View>
               );

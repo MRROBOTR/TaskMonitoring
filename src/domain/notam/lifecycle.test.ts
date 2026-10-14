@@ -32,6 +32,16 @@ describe('evaluateLifecycle', () => {
     expect(evaluateLifecycle(r, new Date('2026-10-15T12:00:00Z'), index).state).toBe('active');
   });
 
+  it('keeps the original in force until the replacement\'s own start time', () => {
+    const a = p(NEW_RWY_CLOSED); // B 14 Oct 06:00
+    const r = p(REPLACE_RWY); // B 15 Oct 06:00
+    const index = buildSupersessionIndex([a, r]);
+    const before = evaluateLifecycle(a, new Date('2026-10-14T12:00:00Z'), index);
+    expect(before.state).toBe('active');
+    expect(before.reasons.join(' ')).toMatch(/A0102\/26 ile değiştirilecek/);
+    expect(evaluateLifecycle(a, new Date('2026-10-15T06:00:00Z'), index).state).toBe('replaced');
+  });
+
   it('marks a NOTAM cancelled by a NOTAMC, and cancellation wins over replacement', () => {
     const a = p(NEW_RWY_CLOSED);
     const r = p(REPLACE_RWY);

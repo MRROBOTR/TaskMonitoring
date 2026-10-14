@@ -17,6 +17,8 @@ export interface Supersession {
   kind: 'replaced' | 'cancelled';
   byDisplayId: string;
   byId: string;
+  /** Item B of the superseding message (null if unknown). */
+  effectiveFrom: string | null;
 }
 
 export interface LifecycleResult {
@@ -45,6 +47,7 @@ export function buildSupersessionIndex(notams: Notam[]): Map<string, Supersessio
         kind: n.type === 'CANCEL' ? 'cancelled' : 'replaced',
         byDisplayId: n.displayId,
         byId: n.id,
+        effectiveFrom: n.validFrom.iso,
       });
     }
   }
@@ -61,9 +64,18 @@ export function evaluateLifecycle(
   const sup = key ? (index.get(key) ?? null) : null;
   const scheduleActiveNow = n.schedule ? evaluateSchedule(n.schedule, now) : null;
 
-  if (sup) {
+  // Supersession applies once the superseding message is in force. If its B)
+  // is in the future, this NOTAM stays in force until then (conservative: never hide early).
+  const pending = sup?.effectiveFrom ? now.getTime() < Date.parse(sup.effectiveFrom) : false;
+  if (sup && !pending) {
     reasons.push(`${sup.byDisplayId} ile ${sup.kind === 'cancelled' ? 'iptal edildi' : 'değiştirildi'}`);
+    if (!sup.effectiveFrom) reasons.push('Yerine geçen mesajın başlangıç zamanı bilinmiyor');
     return { state: sup.kind, reasons, supersededBy: sup, scheduleActiveNow };
+  }
+  if (sup && pending) {
+    reasons.push(
+      `${sup.effectiveFrom!.slice(0, 16).replace('T', ' ')}Z itibarıyla ${sup.byDisplayId} ile ${sup.kind === 'cancelled' ? 'iptal edilecek' : 'değiştirilecek'}`,
+    );
   }
   if (n.parseStatus === 'failed' || n.parseStatus === 'needs-review') {
     reasons.push('Mesaj güvenilir şekilde yorumlanamadı — orijinal metni inceleyin');

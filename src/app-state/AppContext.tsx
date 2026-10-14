@@ -26,7 +26,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
 interface AppContextValue {
   db: SqlDatabase;
   settings: AppSettings;
-  updateSettings: (patch: Partial<AppSettings>) => Promise<void>;
+  /** Accepts a patch or a function of the latest settings (safe for rapid successive updates). */
+  updateSettings: (patch: Partial<AppSettings> | ((current: AppSettings) => Partial<AppSettings>)) => Promise<void>;
   /** Incremented after any data change so screens can reload. */
   revision: number;
   bumpRevision: () => void;
@@ -50,11 +51,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     openAppDatabase()
       .then(async (d) => {
         const stored = await getSetting<Partial<AppSettings>>(d, 'app', {});
-        setSettings({
+        const initial = {
           ...DEFAULT_SETTINGS,
           ...stored,
           layers: { ...DEFAULT_LAYER_VISIBILITY, ...(stored.layers ?? {}) },
-        });
+        };
+        setSettings(initial);
         setDb(d);
       })
       .catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)));
@@ -68,15 +70,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [],
   );
 
-  const updateSettings = useCallback(
-    async (patch: Partial<AppSettings>) => {
-      if (!db) return;
-      const next = { ...settings, ...patch };
-      setSettings(next);
-      await setSetting(db, 'app', next);
-    },
-    [db, settings],
-  );
+  const updateSettings = useCallback<AppContextValue['updateSettings']>(async (patch) => {
+    setSettings((prev) => ({ ...prev, ...(typeof patch === 'function' ? patch(prev) : patch) }));
+  }, []);
+
+  // Persist settings whenever they change (after the DB and stored settings are loaded).
+  useEffect(() => {
+    if (db) void setSetting(db, 'app', settings);
+  }, [db, settings]);
 
   const bumpRevision = useCallback(() => setRevision((r) => r + 1), []);
 
