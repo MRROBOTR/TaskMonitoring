@@ -1,0 +1,5 @@
+id,ident,type,name,latitude_deg,longitude_deg,elevation_ft,continent,iso_country,iso_region,municipality,scheduled_service,icao_code,iata_code,gps_code,local_code,home_link,wikipedia_link,keywords
+4509,LTAC,large_airport,Esenboğa International Airport,40.128101,32.995098,3125,AS,TR,TR-06,Ankara,yes,LTAC,ESB,LTAC,,https://esenbogaairport.com/,https://en.wikipedia.org/wiki/Esenbo%C4%9Fa_International_Airport,
+4528,LTBA,large_airport,İstanbul Atatürk Airport,40.971913,28.823714,163,EU,TR,TR-34,Istanbul(Bakırköy),no,LTBA,ISL,LTBA,,http://www.ataturkairport.com/eng/,https://en.wikipedia.org/wiki/Istanbul_Atat%C3%BCrk_Airport,"Ataturk, Yeşilköy, Yesilkoy"
+4569,LTFJ,large_airport,Istanbul Sabiha Gökçen International Airport,40.898602,29.3092,312,AS,TR,TR-34,"Pendik, Istanbul",yes,LTFJ,SAW,LTFJ,,http://www.sgairport.com/,https://en.wikipedia.org/wiki/Istanbul_Sabiha_G%C3%B6k%C3%A7en_International_Airport,Sabiha Gökçen Havalimanı
+317457,LTFM,large_airport,İstanbul Airport,41.274874,28.732136,325,EU,TR,TR-34,Istanbul,yes,LTFM,IST,LTFM,,https://www.istairport.com/,https://en.wikipedia.org/wiki/Istanbul_Airport,Arnavutköy

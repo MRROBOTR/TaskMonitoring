@@ -1,0 +1,5 @@
+id,filename,ident,name,type,frequency_khz,latitude_deg,longitude_deg,elevation_ft,iso_country,dme_frequency_khz,dme_channel,dme_latitude_deg,dme_longitude_deg,dme_elevation_ft,slaved_variation_deg,magnetic_variation_deg,usageType,power,associated_airport
+86049,Biga_VOR-DME_TR,BIG,Biga,VOR-DME,116900,40.285301208496094,27.365800857543945,417,TR,116900,116X,,,,2.007,3.585,BOTH,HIGH,
+89352,Istanbul_VORTAC_TR,IST,Istanbul,VORTAC,112500,40.962501525878906,28.80970001220703,108,TR,112500,072X,,,,2.007,4.143,BOTH,HIGH,LTBA
+95605,Yalova_VOR-DME_TR,YAA,Yalova,VOR-DME,117700,40.474998474121094,29.207500457763672,2857,TR,117700,124X,,,,2.007,4.133,BOTH,HIGH,LTBP
+95606,Yalova_NDB_TR,YAA,Yalova,NDB,305,40.564701080322266,29.371700286865234,,TR,,,,,,,4.152,BOTH,HIGH,LTBP
